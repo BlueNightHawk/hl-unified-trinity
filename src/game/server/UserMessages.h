@@ -86,4 +86,16 @@ inline int gmsgFog = 0;
 
 inline int gmsgClientGibs = 0;
 
+// RENDERERS START
+inline int gmsgSetFog = 0;
+inline int gmsgLightStyle = 0;
+inline int gmsgCreateDecal = 0;
+inline int gmsgStudioDecal = 0;
+inline int gmsgSkyMark_Sky = 0;
+inline int gmsgSkyMark_World = 0;
+inline int gmsgCreateDLight = 0;
+inline int gmsgFreeEnt = 0;
+inline int gmsgCreateSystem = 0;
+// RENDERERS END
+
 void LinkUserMessages();

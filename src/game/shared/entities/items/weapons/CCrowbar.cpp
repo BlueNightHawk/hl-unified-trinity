@@ -83,7 +83,6 @@ void CCrowbar::PrimaryAttack()
 
 void CCrowbar::Smack()
 {
-	DecalGunshot(&m_trHit, BULLET_PLAYER_CROWBAR);
 }
 
 void CCrowbar::SwingAgain()
@@ -252,6 +251,10 @@ bool CCrowbar::Swing(bool fFirst)
 		{
 			m_flNextPrimaryAttack = GetNextAttackDelay(0.25);
 		}
+
+		// RENDERERS START
+		DecalGunshot(&m_trHit, BULLET_PLAYER_CROWBAR, vecSrc, vecEnd);
+		// RENDERERS END
 
 		SetThink(&CCrowbar::Smack);
 		pev->nextthink = gpGlobals->time + 0.2;

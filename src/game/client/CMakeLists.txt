@@ -49,6 +49,7 @@ target_include_directories(client PRIVATE
 	ui/hud
 	ui/vgui
 	ui/vgui/utils
+	trinity
 	../../public
 	../../common
 	../shared
@@ -69,7 +70,8 @@ target_link_libraries(client PRIVATE
 	$<$<PLATFORM_ID:Windows>:wsock32>
 	SDL2
 	OpenAL::OpenAL
-	libnyquist)
+	libnyquist
+	${OPENGL_LIBRARY})
 
 if (UNIX)
 	# Tell the linker to search for vgui.so and SDL2-2.0.so.0 in here
@@ -235,6 +237,15 @@ target_sources(client PRIVATE
 	ui/vgui/utils/vgui_scrollbar2.h
 	ui/vgui/utils/vgui_slider2.cpp
 	ui/vgui/utils/vgui_slider2.h
+
+	trinity/bsprenderer.cpp
+	trinity/frustum.cpp
+	trinity/mirrormanager.cpp
+	trinity/particle_engine.cpp
+	trinity/propmanager.cpp
+	trinity/rendererdefs.cpp
+	trinity/textureloader.cpp
+	trinity/watershader.cpp
 
 	../server/cdll_dll.h
 	../server/enginecallback.h

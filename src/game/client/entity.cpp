@@ -26,6 +26,19 @@
 
 #include "utils/ConCommandSystem.h"
 
+// RENDERERS START
+#include "bsprenderer.h"
+#include "particle_engine.h"
+#include "mirrormanager.h"
+
+#include "studio.h"
+#include "StudioModelRenderer.h"
+#include "GameStudioModelRenderer.h"
+
+extern CGameStudioModelRenderer g_StudioRenderer;
+int g_iFlashLight = 0;
+// RENDERERS END
+
 extern engine_studio_api_t IEngineStudio;
 
 void Game_AddObjects();
@@ -39,7 +52,7 @@ static TEMPENTITY* gpTempEntActive = nullptr;
 /**
  *	@brief Return 0 to filter entity from visible list for rendering
  */
-int DLLEXPORT HUD_AddEntity(int type, cl_entity_t* ent, const char* modelname)
+int DLLEXPORT HUD_AddEntity(int type, struct cl_entity_t* ent, const char* modelname)
 {
 	switch (type)
 	{
@@ -56,6 +69,11 @@ int DLLEXPORT HUD_AddEntity(int type, cl_entity_t* ent, const char* modelname)
 	// in spectator mode:
 	// each frame every entity passes this function, so the overview hooks
 	// it to filter the overview entities
+
+// RENDERERS START
+	if (!gBSPRenderer.FilterEntities(type, ent, modelname))
+		return 0;
+	// RENDERERS END
 
 	if (0 != g_iUser1)
 	{
@@ -137,6 +155,12 @@ void DLLEXPORT HUD_ProcessPlayerState(entity_state_t* dst, const entity_state_t*
 	dst->team = src->team;
 	dst->colormap = src->colormap;
 
+// RENDERERS START
+	if (src->effects & EF_DIMLIGHT)
+		g_iFlashLight = 1;
+	else
+		g_iFlashLight = 0;
+	// RENDERERS END
 
 	// Save off some data so other areas of the Client DLL can get to it
 	cl_entity_t* player = gEngfuncs.GetLocalPlayer(); // Get the local player's index
@@ -296,6 +320,22 @@ void DLLEXPORT HUD_CreateEntities()
 	Game_AddObjects();
 
 	GetClientVoiceMgr()->CreateEntities();
+
+// RENDERES START
+	//  Animate lights here
+	gBSPRenderer.AnimateLight();
+
+	// Do this here, not in refdef
+	gBSPRenderer.SetupRenderer();
+
+	if (g_iFlashLight)
+	{
+		cl_entity_t* pView = gEngfuncs.GetViewModel();
+
+		if (pView)
+			SetupFlashlight(pView->origin + Vector(0, 0, 8), Vector(-pView->angles[0], pView->angles[1], pView->angles[2]), gEngfuncs.GetClientTime(), gHUD.m_flTimeDelta);
+	}
+	// RENDERERS END
 }
 
 /**
@@ -375,6 +415,21 @@ void DLLEXPORT HUD_TempEntUpdate(
 	if (g_pParticleMan)
 		g_pParticleMan->SetVariables(cl_gravity, vAngles);
 
+
+// RENDERERS START
+	//  Get bsp renderer list
+	gBSPRenderer.GetRenderEnts();
+
+	if (frametime > 0)
+	{
+		// Update particles
+		gParticleEngine.Update();
+
+		// Decay lights here
+		gBSPRenderer.DecayLights();
+	}
+	// RENDERERS END
+
 	// Nothing to simulate
 	if (!*ppTempEntActive)
 		return;
@@ -403,6 +458,9 @@ void DLLEXPORT HUD_TempEntUpdate(
 		{
 			if ((pTemp->flags & FTENT_NOMODEL) == 0)
 			{
+				// RENDERERS START
+				gBSPRenderer.AddEntity(&pTemp->entity);
+				// RENDERERS END
 				Callback_AddVisibleEntity(&pTemp->entity);
 			}
 			pTemp = pTemp->next;
@@ -711,6 +769,12 @@ void DLLEXPORT HUD_TempEntUpdate(
 						pTemp->flags &= ~FTENT_FADEOUT; // Don't fade out, just die
 					}
 				}
+				// RENDERERS START
+				else
+				{
+					gBSPRenderer.AddEntity(&pTemp->entity);
+				}
+				// RENDERERS END
 			}
 		}
 		pTemp = pnext;

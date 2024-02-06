@@ -62,6 +62,35 @@ inline void AngleVectors(const Vector& angles, Vector& forward, Vector& right, V
 	AngleVectors(angles, &forward, &right, &up);
 }
 
+inline void AngleVectors(const float* angles, float* forward, float* right, float* up)
+{
+	Vector a;
+	Vector f, r, u;
+	
+	a = (float*)angles;
+
+	AngleVectors(a, &f, &r, &u);
+
+	if (forward)
+	{
+		forward[0] = f[0];
+		forward[1] = f[1];
+		forward[2] = f[2];
+	}
+	if (right)
+	{
+		right[0] = r[0];
+		right[1] = r[1];
+		right[2] = r[2];
+	}
+	if (up)
+	{
+		up[0] = u[0];
+		up[1] = u[1];
+		up[2] = u[2];
+	}
+}
+
 void AngleVectorsTranspose(const Vector& angles, Vector* forward, Vector* right, Vector* up);
 
 void AngleMatrix(const Vector& angles, float matrix[3][4]);

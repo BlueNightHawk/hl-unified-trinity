@@ -69,7 +69,7 @@ public:
 
 	bool IsBreakable();
 
-	int DamageDecal(int bitsDamageType) override;
+	const char* DamageDecal(int bitsDamageType) override;
 
 	void Die();
 	int ObjectCaps() override { return (CBaseEntity::ObjectCaps() & ~FCAP_ACROSS_TRANSITION); }

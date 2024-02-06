@@ -556,9 +556,11 @@ void ClearMultiDamage();
 void ApplyMultiDamage(CBaseEntity* inflictor, CBaseEntity* attacker);
 void AddMultiDamage(CBaseEntity* inflictor, CBaseEntity* pEntity, float flDamage, int bitsDamageType);
 
-void DecalGunshot(TraceResult* pTrace, int iBulletType);
 void SpawnBlood(Vector vecSpot, int bloodColor, float flDamage);
-int DamageDecal(CBaseEntity* pEntity, int bitsDamageType);
+// RENDERERS START
+extern void DecalGunshot(TraceResult* pTrace, int iBulletType, Vector vecSrc, Vector vecEnd);
+extern char* DamageDecal(CBaseEntity* pEntity, int bitsDamageType);
+// RENDERERS END
 
 /**
  *	@brief this entity is exploding, or otherwise needs to inflict damage upon entities within a certain range.

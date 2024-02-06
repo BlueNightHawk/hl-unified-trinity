@@ -69,7 +69,7 @@ public:
 //=========================================================
 // 3D Vector
 //=========================================================
-class Vector // same data-layout as engine's vec3_t,
+class Vector // same data-layout as engine's Vector,
 {			 //		which is a vec_t[3]
 public:
 	// Construction/destruction
@@ -81,6 +81,13 @@ public:
 		: x(X),
 		  y(Y),
 		  z(Z)
+	{
+	}
+
+	constexpr Vector(float *v)
+		: x(v[0]),
+		  y(v[1]),
+		  z(v[2])
 	{
 	}
 

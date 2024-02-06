@@ -44,6 +44,11 @@ set(RELEASE_TYPE "Pre-Alpha" "Alpha" "Beta" "Release")
 set(HalfLife_RELEASE_TYPE "Pre-Alpha" CACHE STRING "What type of release you're building")
 set_property(CACHE HalfLife_RELEASE_TYPE PROPERTY STRINGS ${RELEASE_TYPE})
 
+option(HalfLife_Post_25th "Compile for 25th anniversary version" OFF)
+if (HalfLife_Post_25th)
+	add_definitions(-DHL25_UPDATE)
+endif()
+
 list(FIND RELEASE_TYPE "${HalfLife_RELEASE_TYPE}" RELEASE_TYPE_INDEX)
 if(RELEASE_TYPE_INDEX EQUAL -1)
 	message(FATAL_ERROR "HalfLife_RELEASE_TYPE must be one of: ${RELEASE_TYPE}")

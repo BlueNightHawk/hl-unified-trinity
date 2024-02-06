@@ -727,16 +727,18 @@ bool CBreakable::IsBreakable()
 	return m_Material != matUnbreakableGlass;
 }
 
-int CBreakable::DamageDecal(int bitsDamageType)
+// RENDERERS START
+const char* CBreakable ::DamageDecal(int bitsDamageType)
 {
-	if (m_Material == matGlass)
-		return DECAL_GLASSBREAK1 + RANDOM_LONG(0, 2);
+	if (pev->rendermode == kRenderTransAlpha)
+		return 0;
 
-	if (m_Material == matUnbreakableGlass)
-		return DECAL_BPROOF1;
+	if (pev->rendermode != kRenderNormal)
+		return "shot_glass";
 
-	return CBaseEntity::DamageDecal(bitsDamageType);
+	return "shot";
 }
+// RENDERERS END
 
 class CPushable : public CBreakable
 {

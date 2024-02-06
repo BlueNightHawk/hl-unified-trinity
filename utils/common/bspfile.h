@@ -46,6 +46,7 @@
 #define BSPVERSION 30
 #define TOOLVERSION 2
 
+#include "com_model.h"
 
 typedef struct
 {
@@ -69,15 +70,6 @@ typedef struct
 #define LUMP_MODELS 14
 
 #define HEADER_LUMPS 15
-
-typedef struct
-{
-	float mins[3], maxs[3];
-	float origin[3];
-	int headnode[MAX_MAP_HULLS];
-	int visleafs; // not including the solid leaf 0
-	int firstface, numfaces;
-} dmodel_t;
 
 typedef struct
 {
@@ -154,11 +146,6 @@ typedef struct
 	unsigned short numfaces; // counting both sides
 } dnode_t;
 
-typedef struct
-{
-	int planenum;
-	short children[2]; // negative numbers are contents
-} dclipnode_t;
 
 
 typedef struct texinfo_s
@@ -223,7 +210,6 @@ typedef struct
 
 #define ANGLE_UP -1
 #define ANGLE_DOWN -2
-
 
 // the utilities get to be lazy and just use large static arrays
 
@@ -308,7 +294,7 @@ typedef struct epair_s
 
 typedef struct
 {
-	vec3_t origin;
+	Vector origin;
 	int firstbrush;
 	int numbrushes;
 	epair_t* epairs;
@@ -325,7 +311,7 @@ char* ValueForKey(entity_t* ent, char* key);
 // will return "" if not present
 
 vec_t FloatForKey(entity_t* ent, char* key);
-void GetVectorForKey(entity_t* ent, char* key, vec3_t vec);
+void GetVectorForKey(entity_t* ent, char* key, Vector vec);
 
 epair_t* ParseEpair(void);
 

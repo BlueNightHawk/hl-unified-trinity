@@ -1288,6 +1288,16 @@ void CBaseMonster::TraceAttack(CBaseEntity* attacker, float flDamage, Vector vec
 		TraceBleed(flDamage, vecDir, ptr, bitsDamageType);
 		AddMultiDamage(attacker, this, flDamage, bitsDamageType);
 	}
+
+// RENDERERS START
+	if (BloodColor() != DONT_BLEED)
+	{
+		if (BloodColor() == BLOOD_COLOR_YELLOW || BloodColor() == BLOOD_COLOR_GREEN)
+			UTIL_StudioDecal(ptr->vecPlaneNormal, ptr->vecEndPos, "shot_alien", ENTINDEX(ptr->pHit));
+		else
+			UTIL_StudioDecal(ptr->vecPlaneNormal, ptr->vecEndPos, "shot_human", ENTINDEX(ptr->pHit));
+	}
+	// RENDERERS END
 }
 
 void CBaseEntity::FireBullets(unsigned int cShots, Vector vecSrc, Vector vecDirShooting, Vector vecSpread,
@@ -1365,7 +1375,9 @@ void CBaseEntity::FireBullets(unsigned int cShots, Vector vecSrc, Vector vecDirS
 				pEntity->TraceAttack(attacker, iDamage, vecDir, &tr, DMG_BULLET | ((iDamage > 16) ? DMG_ALWAYSGIB : DMG_NEVERGIB));
 
 				TEXTURETYPE_PlaySound(&tr, vecSrc, vecEnd, iBulletType);
-				DecalGunshot(&tr, iBulletType);
+				// RENDERERS START
+				DecalGunshot(&tr, iBulletType, vecSrc, vecEnd);
+				// RENDERERS END
 			}
 			else
 				switch (iBulletType)
@@ -1383,7 +1395,9 @@ void CBaseEntity::FireBullets(unsigned int cShots, Vector vecSrc, Vector vecDirS
 					pEntity->TraceAttack(attacker, GetSkillFloat("plr_buckshot"sv), vecDir, &tr, DMG_BULLET);
 
 					TEXTURETYPE_PlaySound(&tr, vecSrc, vecEnd, iBulletType);
-					DecalGunshot(&tr, iBulletType);
+					// RENDERERS START
+					DecalGunshot(&tr, iBulletType, vecSrc, vecEnd);
+					// RENDERERS END
 					break;
 
 				default:
@@ -1391,7 +1405,9 @@ void CBaseEntity::FireBullets(unsigned int cShots, Vector vecSrc, Vector vecDirS
 					pEntity->TraceAttack(attacker, GetSkillFloat("bullet_9mm"sv), vecDir, &tr, DMG_BULLET);
 
 					TEXTURETYPE_PlaySound(&tr, vecSrc, vecEnd, iBulletType);
-					DecalGunshot(&tr, iBulletType);
+					// RENDERERS START
+					DecalGunshot(&tr, iBulletType, vecSrc, vecEnd);
+					// RENDERERS END
 
 					break;
 
@@ -1399,26 +1415,34 @@ void CBaseEntity::FireBullets(unsigned int cShots, Vector vecSrc, Vector vecDirS
 					pEntity->TraceAttack(attacker, GetSkillFloat("bullet_9mmAR"sv), vecDir, &tr, DMG_BULLET);
 
 					TEXTURETYPE_PlaySound(&tr, vecSrc, vecEnd, iBulletType);
-					DecalGunshot(&tr, iBulletType);
+					// RENDERERS START
+					DecalGunshot(&tr, iBulletType, vecSrc, vecEnd);
+					// RENDERERS END
 
 					break;
 
 				case BULLET_MONSTER_12MM:
 					pEntity->TraceAttack(attacker, GetSkillFloat("bullet_12mm"sv), vecDir, &tr, DMG_BULLET);
 					TEXTURETYPE_PlaySound(&tr, vecSrc, vecEnd, iBulletType);
-					DecalGunshot(&tr, iBulletType);
+					// RENDERERS START
+					DecalGunshot(&tr, iBulletType, vecSrc, vecEnd);
+					// RENDERERS END
 					break;
 
 				case BULLET_PLAYER_556:
 					pEntity->TraceAttack(attacker, GetSkillFloat("plr_556_bullet"sv), vecDir, &tr, DMG_BULLET);
 					TEXTURETYPE_PlaySound(&tr, vecSrc, vecEnd, iBulletType);
-					DecalGunshot(&tr, iBulletType);
+					// RENDERERS START
+					DecalGunshot(&tr, iBulletType, vecSrc, vecEnd);
+					// RENDERERS END
 					break;
 
 				case BULLET_PLAYER_762:
 					pEntity->TraceAttack(attacker, GetSkillFloat("plr_762_bullet"sv), vecDir, &tr, DMG_BULLET);
 					TEXTURETYPE_PlaySound(&tr, vecSrc, vecEnd, iBulletType);
-					DecalGunshot(&tr, iBulletType);
+					// RENDERERS START
+					DecalGunshot(&tr, iBulletType, vecSrc, vecEnd);
+					// RENDERERS END
 					break;
 
 				case BULLET_PLAYER_EAGLE:
@@ -1484,7 +1508,9 @@ Vector CBaseEntity::FireBulletsPlayer(unsigned int cShots, Vector vecSrc, Vector
 				pEntity->TraceAttack(attacker, iDamage, vecDir, &tr, DMG_BULLET | ((iDamage > 16) ? DMG_ALWAYSGIB : DMG_NEVERGIB));
 
 				TEXTURETYPE_PlaySound(&tr, vecSrc, vecEnd, iBulletType);
-				DecalGunshot(&tr, iBulletType);
+				// RENDERERS START
+				DecalGunshot(&tr, iBulletType, vecSrc, vecEnd);
+				// RENDERERS END
 			}
 			else
 				switch (iBulletType)
@@ -1560,7 +1586,9 @@ Vector CBaseEntity::FireBulletsPlayer(unsigned int cShots, Vector vecSrc, Vector
 					// only decal glass
 					if (!FNullEnt(tr.pHit) && VARS(tr.pHit)->rendermode != 0)
 					{
-						UTIL_DecalTrace(&tr, DECAL_GLASSBREAK1 + RANDOM_LONG(0, 2));
+						// RENDERERS START
+						UTIL_CustomDecal(&tr, "shot_glass");
+						// RENDERERS END
 					}
 
 					break;

@@ -18,6 +18,7 @@
  */
 
 #include "cbase.h"
+#include "UserMessages.h"
 
 class CLight : public CPointEntity
 {
@@ -26,12 +27,14 @@ class CLight : public CPointEntity
 
 public:
 	bool KeyValue(KeyValueData* pkvd) override;
+	void SendInitMessage(CBasePlayer* player) override;
 	void Spawn() override;
 	void Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value) override;
 
 private:
 	int m_iStyle;
 	string_t m_iszPattern;
+	bool m_bAlreadySent;
 };
 
 LINK_ENTITY_TO_CLASS(light, CLight);
@@ -40,6 +43,33 @@ BEGIN_DATAMAP(CLight)
 DEFINE_FIELD(m_iStyle, FIELD_INTEGER),
 	DEFINE_FIELD(m_iszPattern, FIELD_STRING),
 	END_DATAMAP();
+
+void CLight ::SendInitMessage(CBasePlayer* player)
+{
+	char szPattern[64];
+	memset(szPattern, 0, sizeof(szPattern));
+
+	if (m_iStyle >= 32)
+	{
+		if (FBitSet(pev->spawnflags, SF_LIGHT_START_OFF))
+			strcpy(szPattern, "a");
+		else if (!FStringNull(m_iszPattern))
+			strcpy(szPattern, (char*)STRING(m_iszPattern));
+		else
+			strcpy(szPattern, "m");
+
+		if (player)
+			MESSAGE_BEGIN(MSG_ONE, gmsgLightStyle, NULL, player);
+		else
+			MESSAGE_BEGIN(MSG_ALL, gmsgLightStyle, NULL);
+
+		WRITE_BYTE(m_iStyle);
+		WRITE_STRING(szPattern);
+		MESSAGE_END();
+	}
+
+	m_bAlreadySent = true;
+}
 
 bool CLight::KeyValue(KeyValueData* pkvd)
 {
@@ -84,6 +114,8 @@ void CLight::Spawn()
 
 void CLight::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)
 {
+	char szPattern[64];
+	memset(szPattern, 0, sizeof(szPattern));
 	if (m_iStyle >= 32)
 	{
 		if (!ShouldToggle(useType, !FBitSet(pev->spawnflags, SF_LIGHT_START_OFF)))
@@ -92,17 +124,23 @@ void CLight::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType
 		if (FBitSet(pev->spawnflags, SF_LIGHT_START_OFF))
 		{
 			if (!FStringNull(m_iszPattern))
-				LIGHT_STYLE(m_iStyle, STRING(m_iszPattern));
+				strcpy(szPattern, (char*)STRING(m_iszPattern));
 			else
-				LIGHT_STYLE(m_iStyle, "m");
+				strcpy(szPattern, "m");
 			ClearBits(pev->spawnflags, SF_LIGHT_START_OFF);
 		}
 		else
 		{
-			LIGHT_STYLE(m_iStyle, "a");
+			strcpy(szPattern, "a");
 			SetBits(pev->spawnflags, SF_LIGHT_START_OFF);
 		}
 	}
+
+	MESSAGE_BEGIN(MSG_ALL, gmsgLightStyle, NULL);
+	WRITE_BYTE(m_iStyle);
+	WRITE_STRING(szPattern);
+	MESSAGE_END();
+	LIGHT_STYLE(m_iStyle, szPattern);
 }
 
 /**

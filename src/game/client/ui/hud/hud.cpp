@@ -29,6 +29,23 @@
 
 #include "ui/hud/HudReplacementSystem.h"
 
+// RENDERERS START
+#include "bsprenderer.h"
+#include "propmanager.h"
+#include "textureloader.h"
+#include "particle_engine.h"
+#include "watershader.h"
+#include "mirrormanager.h"
+#include "r_efx.h"
+
+#include "studio.h"
+#include "StudioModelRenderer.h"
+#include "GameStudioModelRenderer.h"
+
+extern CGameStudioModelRenderer g_StudioRenderer;
+extern engine_studio_api_t IEngineStudio;
+// RENDERERS END
+
 class CHLVoiceStatusHelper : public IVoiceStatusHelper
 {
 public:
@@ -90,6 +107,8 @@ void __CmdFunc_OpenCommandMenu()
 	}
 }
 
+#define HOOK_MESSAGE(x) g_ClientUserMessages.RegisterHandler(#x, &CHud::MsgFunc_##x, this)
+
 // This is called every time the DLL is loaded
 void CHud::Init()
 {
@@ -105,6 +124,19 @@ void CHud::Init()
 	g_ClientUserMessages.RegisterHandler("Weapons", &CHud::MsgFunc_Weapons, this);
 	g_ClientUserMessages.RegisterHandler("Fog", &CHud::MsgFunc_Fog, this);
 
+// RENDERERS START
+	HOOK_MESSAGE(SetFog);
+	HOOK_MESSAGE(LightStyle);
+	HOOK_MESSAGE(CreateDecal);
+	HOOK_MESSAGE(StudioDecal);
+	HOOK_MESSAGE(SkyMarkS);
+	HOOK_MESSAGE(SkyMarkW);
+	HOOK_MESSAGE(DynLight);
+	HOOK_MESSAGE(FreeEnt);
+	HOOK_MESSAGE(Particle);
+
+	R_Init();
+// RENDERERS END
 	CVAR_CREATE("hud_classautokill", "1", FCVAR_ARCHIVE | FCVAR_USERINFO); // controls whether or not to suicide immediately on TF class switch
 	CVAR_CREATE("hud_takesshots", "0", FCVAR_ARCHIVE);					   // controls whether or not to automatically take screenshots at the end of a round
 
@@ -151,6 +183,10 @@ void CHud::Init()
 void CHud::Shutdown()
 {
 	GetClientVoiceMgr()->Shutdown();
+
+// RENDERERS START
+	R_Shutdown();
+	// RENDERERS END
 }
 
 int CHud::GetSpriteIndex(const char* SpriteName)
@@ -229,6 +265,10 @@ void CHud::VidInit()
 	{
 		hudElement->VidInit();
 	}
+
+	// RENDERERS START
+	R_VidInit();
+	// RENDERERS_END
 }
 
 void CHud::MsgFunc_HudColor(const char* pszName, BufferReader& reader)

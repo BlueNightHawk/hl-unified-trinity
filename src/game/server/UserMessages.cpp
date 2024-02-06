@@ -91,4 +91,16 @@ void LinkUserMessages()
 	gmsgFog = REG_USER_MSG("Fog", 14);
 
 	gmsgClientGibs = REG_USER_MSG("ClientGibs", 18);
+
+// RENDERERS START
+	gmsgSetFog = REG_USER_MSG("SetFog", -1);
+	gmsgLightStyle = REG_USER_MSG("LightStyle", -1);
+	gmsgCreateDecal = REG_USER_MSG("CreateDecal", -1);
+	gmsgStudioDecal = REG_USER_MSG("StudioDecal", -1);
+	gmsgCreateDLight = REG_USER_MSG("DynLight", -1);
+	gmsgFreeEnt = REG_USER_MSG("FreeEnt", -1);
+	gmsgSkyMark_Sky = REG_USER_MSG("SkyMarkS", -1);
+	gmsgSkyMark_World = REG_USER_MSG("SkyMarkW", -1);
+	gmsgCreateSystem = REG_USER_MSG("Particle", -1);
+	// RENDERERS END
 }

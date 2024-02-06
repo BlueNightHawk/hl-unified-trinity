@@ -40,6 +40,23 @@
 
 #include "particleman.h"
 
+// RENDERERS START
+#include "rendererdefs.h"
+#include "particle_engine.h"
+#include "bsprenderer.h"
+#include "propmanager.h"
+#include "textureloader.h"
+#include "watershader.h"
+#include "mirrormanager.h"
+
+#include "studio.h"
+#include "StudioModelRenderer.h"
+#include "GameStudioModelRenderer.h"
+
+extern CGameStudioModelRenderer g_StudioRenderer;
+extern engine_studio_api_t IEngineStudio;
+// RENDERERS END
+
 extern bool g_ResetMousePosition;
 
 void CL_LoadParticleMan();
@@ -48,6 +65,16 @@ void CL_UnloadParticleMan();
 void InitInput();
 void EV_HookEvents();
 void IN_Commands();
+
+// RENDERERS START
+CBSPRenderer gBSPRenderer;
+CParticleEngine gParticleEngine;
+CWaterShader gWaterShader;
+
+CTextureLoader gTextureLoader;
+CPropManager gPropManager;
+CMirrorManager gMirrorManager;
+// RENDERERS END
 
 /**
  *	@brief Engine calls this to enumerate player collision hulls, for prediction.
@@ -101,6 +128,10 @@ static bool CL_InitClient()
 
 	EV_HookEvents();
 	CL_LoadParticleMan();
+
+	// RENDERERS START
+	R_DisableSteamMSAA();
+	// RENDERERS END
 
 	if (!FileSystem_LoadFileSystem())
 	{
@@ -175,6 +206,10 @@ int DLLEXPORT HUD_Redraw(float time, int intermission)
 {
 	gHUD.Redraw(time, 0 != intermission);
 
+// RENDERERS START
+	HUD_PrintSpeeds();
+	// RENDERERS END
+
 	return 1;
 }
 
@@ -226,6 +261,22 @@ void DLLEXPORT HUD_DirectorMessage(int iSize, void* pbuf)
 	BufferReader reader{{reinterpret_cast<std::byte*>(pbuf), static_cast<std::size_t>(iSize)}};
 	gHUD.m_Spectator.DirectorMessage(reader);
 }
+
+// RENDERERS_START
+/*
+==========================
+CL_GetModelData
+
+
+==========================
+*/
+extern "C" DLLEXPORT void CL_GetModelByIndex(int iIndex, void** pPointer)
+{
+	void* pModel = IEngineStudio.GetModelByIndex(iIndex);
+	*pPointer = pModel;
+}
+// RENDERERS_END
+
 
 void CL_UnloadParticleMan()
 {

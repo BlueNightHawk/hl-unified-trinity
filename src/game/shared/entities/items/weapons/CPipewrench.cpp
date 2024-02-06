@@ -105,7 +105,6 @@ void CPipewrench::SecondaryAttack()
 
 void CPipewrench::Smack()
 {
-	DecalGunshot(&m_trHit, BULLET_PLAYER_CROWBAR);
 }
 
 void CPipewrench::SwingAgain()
@@ -294,6 +293,10 @@ bool CPipewrench::Swing(const bool bFirst)
 
 		SetThink(&CPipewrench::Smack);
 		pev->nextthink = gpGlobals->time + 0.2;
+
+		// RENDERERS START
+		DecalGunshot(&m_trHit, BULLET_PLAYER_CROWBAR, vecSrc, vecEnd);
+		// RENDERERS END
 #endif
 
 		if (GetSkillFloat("chainsaw_melee") != 0)

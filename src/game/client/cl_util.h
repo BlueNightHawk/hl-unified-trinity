@@ -27,6 +27,8 @@
 #include "utils/ConCommandSystem.h"
 #include "utils/shared_utils.h"
 
+#include "SDL2/SDL.h"
+
 /**
  *	@brief Helper function to register client side commands that were originally registered with @c HOOK_COMMAND.
  */

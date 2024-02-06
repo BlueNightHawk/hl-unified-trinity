@@ -60,15 +60,93 @@ void SpawnBlood(Vector vecSpot, int bloodColor, float flDamage)
 	UTIL_BloodDrips(vecSpot, g_vecAttackDir, bloodColor, (int)flDamage);
 }
 
-int DamageDecal(CBaseEntity* pEntity, int bitsDamageType)
+// RENDERERS START
+const char* DamageDecal(CBaseEntity* pEntity, int bitsDamageType, Vector vecSrc, Vector vecEnd)
 {
-	if (!pEntity)
-		return (DECAL_GUNSHOT1 + RANDOM_LONG(0, 4));
+	char chTextureType;
+	const char* pTextureName;
+	float rgfl1[3];
+	float rgfl2[3];
+	chTextureType = 0;
 
+	edict_t* pWorld = CBaseEntity::World->edict();
+
+	if (vecSrc && vecEnd)
+	{
+		if (pEntity && pEntity->Classify() != ENTCLASS_NONE && !pEntity->IsMachine())
+		{
+			// hit body
+			chTextureType = CHAR_TEX_FLESH;
+		}
+		else
+		{
+			vecSrc.CopyToArray(rgfl1);
+			vecEnd.CopyToArray(rgfl2);
+
+			if (pEntity)
+				pTextureName = TRACE_TEXTURE(ENT(pEntity->pev), rgfl1, rgfl2);
+			else
+				pTextureName = TRACE_TEXTURE(pWorld, rgfl1, rgfl2);
+
+			if (pTextureName)
+			{
+				pTextureName = g_MaterialSystem.StripTexturePrefix(pTextureName);
+
+				// Logger->debug("texture hit: {}", pTextureName);
+
+				// get texture type
+				chTextureType = g_MaterialSystem.FindTextureType(pTextureName);
+			}
+		}
+		if (pEntity && pEntity->pev->rendermode != kRenderNormal && pEntity->pev->rendermode != kRenderTransAlpha)
+		{
+			return "shot_glass";
+		}
+		else if (chTextureType)
+		{
+			if (chTextureType == CHAR_TEX_CONCRETE)
+			{
+				return "shot";
+			}
+			else if (chTextureType == CHAR_TEX_METAL)
+			{
+				return "shot_metal";
+			}
+			else if (chTextureType == CHAR_TEX_DIRT)
+			{
+				return "shot";
+			}
+			else if (chTextureType == CHAR_TEX_VENT)
+			{
+				return "shot_metal";
+			}
+			else if (chTextureType == CHAR_TEX_TILE)
+			{
+				return "shot";
+			}
+			else if (chTextureType == CHAR_TEX_WOOD)
+			{
+				return "shot_wood";
+			}
+			else if (chTextureType == CHAR_TEX_COMPUTER)
+			{
+				return "shot";
+			}
+			else if (chTextureType == CHAR_TEX_GLASS)
+			{
+				return "shot_glass";
+			}
+		}
+	}
+	if (!pEntity)
+	{
+		return "shot";
+	}
 	return pEntity->DamageDecal(bitsDamageType);
 }
-
-void DecalGunshot(TraceResult* pTrace, int iBulletType)
+// RENDERERS END
+// RENDERERS START
+void DecalGunshot(TraceResult* pTrace, int iBulletType, Vector vecSrc, Vector vecEnd)
 {
 	// Is the entity valid
 	if (!UTIL_IsValidEntity(pTrace->pHit))
@@ -76,7 +154,7 @@ void DecalGunshot(TraceResult* pTrace, int iBulletType)
 
 	if (VARS(pTrace->pHit)->solid == SOLID_BSP || VARS(pTrace->pHit)->movetype == MOVETYPE_PUSHSTEP)
 	{
-		CBaseEntity* pEntity = nullptr;
+		CBaseEntity* pEntity = NULL;
 		// Decal the wall with a gunshot
 		if (!FNullEnt(pTrace->pHit))
 			pEntity = CBaseEntity::Instance(pTrace->pHit);
@@ -91,19 +169,20 @@ void DecalGunshot(TraceResult* pTrace, int iBulletType)
 		case BULLET_PLAYER_357:
 		default:
 			// smoke and decal
-			UTIL_GunshotDecalTrace(pTrace, DamageDecal(pEntity, DMG_BULLET));
+			UTIL_CustomDecal(pTrace, DamageDecal(pEntity, DMG_BULLET, vecSrc, vecEnd));
 			break;
 		case BULLET_MONSTER_12MM:
 			// smoke and decal
-			UTIL_GunshotDecalTrace(pTrace, DamageDecal(pEntity, DMG_BULLET));
+			UTIL_CustomDecal(pTrace, DamageDecal(pEntity, DMG_BULLET, vecSrc, vecEnd));
 			break;
 		case BULLET_PLAYER_CROWBAR:
 			// wall decal
-			UTIL_DecalTrace(pTrace, DamageDecal(pEntity, DMG_CLUB));
+			UTIL_CustomDecal(pTrace, DamageDecal(pEntity, DMG_BULLET, vecSrc, vecEnd));
 			break;
 		}
 	}
 }
+// RENDERERS END
 
 void EjectBrass(const Vector& vecOrigin, const Vector& vecVelocity, float rotation, int model, int soundtype)
 {

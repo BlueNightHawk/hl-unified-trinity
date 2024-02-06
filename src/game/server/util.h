@@ -235,6 +235,12 @@ void UTIL_PrecacheOther(const char* szClassname, string_t* keys, string_t* value
  */
 void UTIL_PrecacheOther(const char* szClassname);
 
+// RENDERERS START
+extern void UTIL_Particle(const char* szName, Vector vecOrigin, Vector vDirection, int iType);
+extern void UTIL_CustomDecal(TraceResult* pTrace, const char* name, int persistent = 0);
+extern void UTIL_StudioDecal(Vector normal, Vector position, const char* name, int entindex);
+// RENDERERS END
+
 // prints a message to each client
 void UTIL_ClientPrintAll(int msg_dest, const char* msg_name, const char* param1 = nullptr, const char* param2 = nullptr, const char* param3 = nullptr, const char* param4 = nullptr);
 inline void UTIL_CenterPrintAll(const char* msg_name, const char* param1 = nullptr, const char* param2 = nullptr, const char* param3 = nullptr, const char* param4 = nullptr)

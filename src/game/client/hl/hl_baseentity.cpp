@@ -67,7 +67,9 @@ void CBaseEntity::MakeDormant() {}
 bool CBaseEntity::IsDormant() { return false; }
 bool CBaseEntity::IsInWorld() { return true; }
 bool CBaseEntity::ShouldToggle(USE_TYPE useType, bool currentState) { return false; }
-int CBaseEntity::DamageDecal(int bitsDamageType) { return -1; }
+// RENDERERS START
+const char* CBaseEntity ::DamageDecal(int bitsDamageType) { return NULL; }
+// RENDERERS END
 CBaseEntity* CBaseEntity::Create(const char* szName, const Vector& vecOrigin, const Vector& vecAngles, CBaseEntity* owner, bool callSpawn) { return nullptr; }
 void CBaseEntity::SUB_Remove() {}
 void CBaseEntity::SUB_StartFadeOut() {}
@@ -305,8 +307,10 @@ void ClearMultiDamage() {}
 void ApplyMultiDamage(CBaseEntity* inflictor, CBaseEntity* attacker) {}
 void AddMultiDamage(CBaseEntity* inflictor, CBaseEntity* pEntity, float flDamage, int bitsDamageType) {}
 void SpawnBlood(Vector vecSpot, int bloodColor, float flDamage) {}
-int DamageDecal(CBaseEntity* pEntity, int bitsDamageType) { return 0; }
-void DecalGunshot(TraceResult* pTrace, int iBulletType) {}
+// RENDERERS START
+char* DamageDecal(CBaseEntity* pEntity, int bitsDamageType, Vector vecSrc, Vector vecEnd) { return 0; }
+void DecalGunshot(TraceResult* pTrace, int iBulletType, Vector vecSrc, Vector vecEnd) {}
+// RENDERERS END
 void EjectBrass(const Vector& vecOrigin, const Vector& vecVelocity, float rotation, int model, int soundtype) {}
 bool CBasePlayerWeapon::KeyValue(KeyValueData* pkvd) { return false; }
 float CBasePlayerWeapon::GetNextAttackDelay(float flTime) { return flTime; }

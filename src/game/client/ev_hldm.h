@@ -8,7 +8,7 @@
 #pragma once
 
 void EV_HLDM_GunshotDecalTrace(pmtrace_t* pTrace, char* decalName);
-void EV_HLDM_DecalGunshot(pmtrace_t* pTrace, int iBulletType);
+void EV_HLDM_DecalGunshot(pmtrace_t* pTrace, int iBulletType, const float* vecSrc, float* vecEnd);
 void EV_HLDM_CheckTracer(int idx, const Vector& vecSrc, const Vector& end, const Vector& forward, const Vector& right,
 	int iBulletType, int iTracerFreq, int* tracerCount);
 void EV_HLDM_FireBullets(int idx,

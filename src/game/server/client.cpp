@@ -23,6 +23,7 @@
 
 */
 
+#include "PlatformHeaders.h"
 #include <algorithm>
 #include <optional>
 
@@ -43,6 +44,151 @@
 #include "ctf/ctf_goals.h"
 
 unsigned int g_ulFrameCount;
+
+// RENDERERS START
+unsigned int ByteToInt(byte* byte)
+{
+	int iValue = byte[0];
+	iValue += (byte[1] << 8);
+	iValue += (byte[2] << 16);
+	iValue += (byte[3] << 24);
+
+	return iValue;
+}
+
+typedef void(__cdecl* CLGETMDL)(int, void**);
+void ExportDetails(void)
+{
+	CLGETMDL ClientGetModelByIndex;
+
+	HMODULE hClient = GetModuleHandleA("client.dll");
+
+	if (!hClient)
+		return;
+
+	// Get pointer to model func
+	ClientGetModelByIndex = (CLGETMDL)GetProcAddress(hClient, "CL_GetModelByIndex");
+
+	if (!ClientGetModelByIndex)
+		return;
+
+	char szPath[64];
+	edict_t* pEdicts[512];
+	int iNumDetailEnts = 0;
+
+	memset(pEdicts, 0, sizeof(pEdicts));
+
+	edict_t* pEdict = g_engfuncs.pfnPEntityOfEntIndex(0);
+	for (int i = 0; i < gpGlobals->maxEntities; i++, pEdict++)
+	{
+		if (pEdict->free)
+			continue;
+
+		const char* classname = STRING(pEdict->v.classname);
+		if (!strcmp(STRING(pEdict->v.classname), "func_detail_ext"))
+		{
+			pEdicts[iNumDetailEnts] = pEdict;
+			iNumDetailEnts++;
+		}
+	}
+
+	if (!iNumDetailEnts)
+		return;
+
+	g_engfuncs.pfnGetGameDir(szPath);
+	strcat(szPath, "/maps/");
+	strcat(szPath, (char*)STRING(gpGlobals->mapname));
+	strcat(szPath, ".edd");
+
+	FILE* pFile = fopen(szPath, "wb");
+	if (!pFile)
+		return;
+
+	int iOffset = 0;
+	byte* pWriteData = new byte[1024 * 1024 * 8];
+	memcpy(pWriteData, &iNumDetailEnts, sizeof(int));
+	iOffset += sizeof(int);
+
+	for (int i = 0; i < iNumDetailEnts; i++)
+	{
+		void* pVModel = NULL;
+		ClientGetModelByIndex(pEdicts[i]->v.modelindex, &pVModel);
+
+		if (!pVModel)
+			continue;
+
+		model_t* pModel = (model_t*)pVModel;
+		if (pModel->type != mod_brush)
+			continue;
+
+		memcpy(&pWriteData[iOffset], &pModel->mins, sizeof(Vector));
+		iOffset += sizeof(Vector);
+		memcpy(&pWriteData[iOffset], &pModel->maxs, sizeof(Vector));
+		iOffset += sizeof(Vector);
+		memcpy(&pWriteData[iOffset], &pModel->nummodelsurfaces, sizeof(int));
+		iOffset += sizeof(int);
+
+		msurface_t* psurf = &pModel->surfaces[pModel->firstmodelsurface];
+		for (int j = 0; j < pModel->nummodelsurfaces; j++)
+		{
+			memcpy(&pWriteData[iOffset], &psurf[j].texinfo->texture->name, sizeof(char) * 16);
+			iOffset += sizeof(char) * 16;
+			memcpy(&pWriteData[iOffset], &psurf[j].lightmaptexturenum, sizeof(int));
+			iOffset += sizeof(int);
+			memcpy(&pWriteData[iOffset], &psurf[j].polys->numverts, sizeof(int));
+			iOffset += sizeof(int);
+			memcpy(&pWriteData[iOffset], &psurf[j].plane->normal, sizeof(Vector));
+			iOffset += sizeof(Vector);
+			memcpy(&pWriteData[iOffset], &psurf[j].plane->dist, sizeof(float));
+			iOffset += sizeof(float);
+
+			memcpy(&pWriteData[iOffset], &psurf[j].texinfo->flags, sizeof(int));
+			iOffset += sizeof(int);
+			memcpy(&pWriteData[iOffset], &psurf[j].texinfo->mipadjust, sizeof(float));
+			iOffset += sizeof(float);
+			memcpy(&pWriteData[iOffset], &psurf[j].texinfo->vecs, sizeof(float) * 8);
+			iOffset += sizeof(float) * 8;
+
+			memcpy(&pWriteData[iOffset], &psurf[j].texturemins[0], sizeof(short));
+			iOffset += sizeof(short);
+			memcpy(&pWriteData[iOffset], &psurf[j].texturemins[1], sizeof(short));
+			iOffset += sizeof(short);
+			memcpy(&pWriteData[iOffset], &psurf[j].extents[0], sizeof(short));
+			iOffset += sizeof(short);
+			memcpy(&pWriteData[iOffset], &psurf[j].extents[1], sizeof(short));
+			iOffset += sizeof(short);
+			memcpy(&pWriteData[iOffset], &psurf[j].light_s, sizeof(int));
+			iOffset += sizeof(int);
+			memcpy(&pWriteData[iOffset], &psurf[j].light_t, sizeof(int));
+			iOffset += sizeof(int);
+			memcpy(&pWriteData[iOffset], &psurf[j].flags, sizeof(int));
+			iOffset += sizeof(int);
+
+			int iXSize = (psurf[j].extents[0] >> 4) + 1;
+			int iYSize = (psurf[j].extents[1] >> 4) + 1;
+			int iSize = iXSize * iYSize;
+
+			for (int k = 0; k < iSize; k++)
+			{
+				pWriteData[iOffset] = psurf[j].samples[k].r;
+				iOffset++;
+				pWriteData[iOffset] = psurf[j].samples[k].g;
+				iOffset++;
+				pWriteData[iOffset] = psurf[j].samples[k].b;
+				iOffset++;
+			}
+
+			glpoly_t* pPoly = psurf[j].polys;
+			memcpy(&pWriteData[iOffset], &pPoly->verts, sizeof(float) * VERTEXSIZE * pPoly->numverts);
+			iOffset += sizeof(float) * VERTEXSIZE * pPoly->numverts;
+		}
+	}
+
+	fwrite(pWriteData, iOffset, 1, pFile);
+	delete[] pWriteData;
+	fclose(pFile);
+}
+// RENDERERS END
 
 /**
  *	@brief called when a player connects to a server
@@ -1477,6 +1623,16 @@ int AddToFullPack(entity_state_t* state, int e, edict_t* ent, edict_t* host, int
 	{
 		return 0;
 	}
+
+	// RENDERERS START
+	if (ent != host && ent->v.renderfx != 70)
+	{
+		if (!ENGINE_CHECK_VISIBILITY((const struct edict_t*)ent, pSet))
+		{
+			return 0;
+		}
+	}
+	// RENDERERS END
 
 	// Ignore if not the host and not touching a PVS/PAS leaf
 	// If pSet is nullptr, then the test will always succeed and the entity will be added to the update

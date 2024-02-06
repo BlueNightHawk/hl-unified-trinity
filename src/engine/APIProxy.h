@@ -217,9 +217,9 @@ struct cl_enginefunc_t
 	void (*pfnSetScreenFade)(screenfade_t* fade);
 	void* (*VGui_GetPanel)();
 	void (*VGui_ViewportPaintBackground)(int extents[4]);
-	[[deprecated("Use FileSystem_LoadFileIntoBuffer instead")]] byte* (*COM_LoadFile)(const char* path, int usehunk, int* pLength);
+	byte* (*COM_LoadFile)(const char* path, int usehunk, int* pLength);
 	char* (*COM_ParseFile)(const char* data, char* token);
-	[[deprecated("Use FileSystem_LoadFileIntoBuffer instead")]] void (*COM_FreeFile)(void* buffer);
+	void (*COM_FreeFile)(void* buffer);
 	triangleapi_t* pTriAPI;
 	efx_api_t* pEfxAPI;
 	event_api_t* pEventAPI;

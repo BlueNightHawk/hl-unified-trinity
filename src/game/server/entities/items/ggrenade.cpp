@@ -77,6 +77,11 @@ void CGrenade::Explode(TraceResult* pTrace, int bitsDamageType)
 		(pev->dmg - 50) * .60, 15, TE_EXPLFLAG_NONE,
 		MSG_PAS, pev->origin);
 
+// RENDERERS START
+	if (iContents != CONTENTS_WATER)
+		UTIL_Particle("explosion_cluster.txt", pev->origin, g_vecZero, 1);
+	// RENDERERS END
+
 	CSoundEnt::InsertSound(bits_SOUND_COMBAT, pev->origin, NORMAL_EXPLOSION_VOLUME, 3.0);
 	CBaseEntity* owner = GetOwner();
 

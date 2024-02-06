@@ -38,6 +38,21 @@
 
 #include "cbase.h"
 
+// RENDERERS START
+#include "frustum.h"
+
+struct fog_settings_t
+{
+	Vector color;
+	int start;
+	int end;
+
+	bool affectsky;
+	bool active;
+};
+// RENDERERS END
+
+
 class BufferReader;
 
 #define DHN_DRAWZERO 1
@@ -876,6 +891,25 @@ public:
 			return color;
 		}
 	}
+
+public:
+	// RENDERERS START
+	fog_settings_t m_pSkyFogSettings;
+	fog_settings_t m_pFogSettings;
+	FrustumCheck viewFrustum;
+
+	void MsgFunc_SetFog(const char* pszName, BufferReader& reader);
+	void MsgFunc_LightStyle(const char* pszName, BufferReader& reader);
+	void MsgFunc_StudioDecal(const char* pszName, BufferReader& reader);
+	void MsgFunc_FreeEnt(const char* pszName, BufferReader& reader);
+
+	void MsgFunc_CreateDecal(const char* pszName, BufferReader& reader);
+	void MsgFunc_SkyMarkS(const char* pszName, BufferReader& reader);
+	void MsgFunc_SkyMarkW(const char* pszName, BufferReader& reader);
+	void MsgFunc_DynLight(const char* pszName, BufferReader& reader);
+
+	void MsgFunc_Particle(const char* pszName, BufferReader& reader);
+	// RENDERERS END
 };
 
 inline CHud gHUD;

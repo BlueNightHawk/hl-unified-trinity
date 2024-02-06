@@ -135,6 +135,10 @@ void CFuncConveyor::Spawn()
 	if ((pev->spawnflags & SF_CONVEYOR_VISUAL) == 0)
 		SetBits(pev->flags, FL_CONVEYOR);
 
+// RENDERERS START
+	pev->effects |= FL_CONVEYOR;
+// RENDERERS END
+
 	// HACKHACK - This is to allow for some special effects
 	if ((pev->spawnflags & SF_CONVEYOR_NOTSOLID) != 0)
 	{
@@ -168,6 +172,24 @@ void CFuncConveyor::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE 
 	pev->speed = -pev->speed;
 	UpdateSpeed(pev->speed);
 }
+
+// RENDERERS START
+class CFuncMirror : public CFuncWall
+{
+public:
+	void Spawn(void);
+};
+
+LINK_ENTITY_TO_CLASS(func_mirror, CFuncMirror);
+LINK_ENTITY_TO_CLASS(func_detail_ext, CFuncWall);
+
+void CFuncMirror ::Spawn(void)
+{
+	CFuncWall::Spawn();
+	pev->effects |= FL_MIRROR;
+}
+// RENDERERS END
+
 
 /**
  *	@brief A simple entity that looks solid but lets you walk through it.

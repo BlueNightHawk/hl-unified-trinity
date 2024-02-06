@@ -27,6 +27,19 @@
 #include "tri.h"
 #include "triangleapi.h"
 
+// RENDERERS START
+#include "bsprenderer.h"
+#include "propmanager.h"
+#include "watershader.h"
+#include "particle_engine.h"
+
+#include "studio.h"
+#include "StudioModelRenderer.h"
+#include "GameStudioModelRenderer.h"
+
+extern CGameStudioModelRenderer g_StudioRenderer;
+// RENDERERS END
+
 extern int giTeamplay;
 
 extern BEAM* pBeam;
@@ -38,6 +51,15 @@ extern TEMPENTITY* pFlare; // Vit_amiN
 
 void CHud::MsgFunc_ResetHUD(const char* pszName, BufferReader& reader)
 {
+	// RENDERERS START
+	gHUD.m_pFogSettings.end = 0.0;
+	gHUD.m_pFogSettings.start = 0.0;
+	gHUD.m_pFogSettings.active = false;
+	gHUD.m_pSkyFogSettings.end = 0.0;
+	gHUD.m_pSkyFogSettings.start = 0.0;
+	gHUD.m_pSkyFogSettings.active = false;
+	// RENDERERS END
+
 	// clear all hud data
 	for (auto hudElement : m_HudList)
 	{
@@ -65,6 +87,16 @@ void CHud::MsgFunc_ViewMode(const char* pszName, BufferReader& reader)
 
 void CHud::MsgFunc_InitHUD(const char* pszName, BufferReader& reader)
 {
+	// RENDERERS START
+	gHUD.m_pFogSettings.end = 0.0;
+	gHUD.m_pFogSettings.start = 0.0;
+	gHUD.m_pFogSettings.active = false;
+	gHUD.m_pSkyFogSettings.end = 0.0;
+	gHUD.m_pSkyFogSettings.start = 0.0;
+	gHUD.m_pSkyFogSettings.active = false;
+	// RENDERERS END
+
+
 	// prepare all hud data
 	for (auto hudElement : m_HudList)
 	{
@@ -161,3 +193,82 @@ void CHud::MsgFunc_Fog(const char* pszName, BufferReader& reader)
 
 	g_RenderFog = g_FogDensity != 0;
 }
+
+
+// RENDERERS START
+void CHud ::MsgFunc_SetFog(const char* pszName, BufferReader& reader)
+{
+	gHUD.m_pFogSettings.color.x = (float)reader.ReadShort() / 255;
+	gHUD.m_pFogSettings.color.y = (float)reader.ReadShort() / 255;
+	gHUD.m_pFogSettings.color.z = (float)reader.ReadShort() / 255;
+	gHUD.m_pFogSettings.start = reader.ReadShort();
+	gHUD.m_pFogSettings.end = reader.ReadShort();
+	gHUD.m_pFogSettings.affectsky = (reader.ReadShort() == 1) ? false : true;
+
+	if (gHUD.m_pFogSettings.end < 1 && gHUD.m_pFogSettings.start < 1)
+		gHUD.m_pFogSettings.active = false;
+	else
+		gHUD.m_pFogSettings.active = true;
+}
+void CHud ::MsgFunc_LightStyle(const char* pszName, BufferReader& reader)
+{
+	int m_iStyleNum = reader.ReadByte();
+	char* szStyle = reader.ReadString();
+	gBSPRenderer.AddLightStyle(m_iStyleNum, szStyle);
+}
+void CHud ::MsgFunc_StudioDecal(const char* pszName, BufferReader& reader)
+{
+	Vector pos, normal;
+	pos = reader.ReadCoordVector();
+	normal = reader.ReadCoordVector();
+	int entindex = reader.ReadShort();
+
+	if (!entindex)
+		return;
+
+	cl_entity_t* pEntity = gEngfuncs.GetEntityByIndex(entindex);
+
+	if (!pEntity)
+		return;
+
+	g_StudioRenderer.StudioDecalForEntity(pos, normal, reader.ReadString(), pEntity);
+}
+void CHud ::MsgFunc_FreeEnt(const char* pszName, BufferReader& reader)
+{
+	int iEntIndex = reader.ReadShort();
+
+	if (!iEntIndex)
+		return;
+
+	cl_entity_t* pEntity = gEngfuncs.GetEntityByIndex(iEntIndex);
+
+	if (!pEntity)
+		return;
+
+	pEntity->efrag = NULL;
+}
+
+void CHud ::MsgFunc_CreateDecal(const char* pszName, BufferReader& reader)
+{
+	gBSPRenderer.MsgCustomDecal(pszName, reader);
+}
+
+void CHud ::MsgFunc_SkyMarkS(const char* pszName, BufferReader& reader)
+{
+	gBSPRenderer.MsgSkyMarker_Sky(pszName, reader);
+}
+void CHud ::MsgFunc_SkyMarkW(const char* pszName, BufferReader& reader)
+{
+	gBSPRenderer.MsgSkyMarker_World(pszName, reader);
+}
+void CHud ::MsgFunc_DynLight(const char* pszName, BufferReader& reader)
+{
+	gBSPRenderer.MsgDynLight(pszName, reader);
+}
+
+void CHud ::MsgFunc_Particle(const char* pszName, BufferReader& reader)
+{
+	gParticleEngine.MsgCreateSystem(pszName, reader);
+}
+
+// RENDERERS END

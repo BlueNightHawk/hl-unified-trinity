@@ -21,6 +21,13 @@
 #include "tri.h"
 #include "view.h"
 
+// RENDERERS START
+#include "bsprenderer.h"
+#include "propmanager.h"
+#include "mirrormanager.h"
+#include "watershader.h"
+// RENDERERS END
+
 extern Vector vJumpOrigin;
 extern Vector vJumpAngles;
 
@@ -1652,6 +1659,10 @@ void DLLEXPORT V_CalcRefdef(ref_params_t* pparams)
 		}
 	#endif
 	*/
+	// RENDERER START
+	// 2012-02-25
+	R_CalcRefDef(pparams);
+	// RENDERER END
 }
 
 /*

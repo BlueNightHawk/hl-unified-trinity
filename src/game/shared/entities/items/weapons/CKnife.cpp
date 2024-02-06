@@ -251,6 +251,10 @@ bool CKnife::Swing(const bool bFirst)
 
 		SetThink(&CKnife::Smack);
 		pev->nextthink = gpGlobals->time + 0.2;
+
+		// RENDERERS START
+		DecalGunshot(&m_trHit, BULLET_PLAYER_CROWBAR, vecSrc, vecEnd);
+		// RENDERERS END
 #endif
 
 		if (GetSkillFloat("chainsaw_melee") != 0)
@@ -268,7 +272,6 @@ void CKnife::SwingAgain()
 
 void CKnife::Smack()
 {
-	DecalGunshot(&m_trHit, BULLET_PLAYER_CROWBAR);
 }
 
 bool CKnife::GetWeaponInfo(WeaponInfo& info)
